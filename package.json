@@ -1,0 +1,22 @@
+{
+  "name": "music-graph",
+  "version": "1.0.0",
+  "description": "'A little aplication for Dijkstra's algorithm to compose music'",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gabrielito666/music-graph.git"
+  },
+  "author": "Gabirel Farias",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gabrielito666/music-graph/issues"
+  },
+  "homepage": "https://github.com/Gabrielito666/music-graph#readme",
+  "dependencies": {
+    "dijkstrajs": "^1.0.3"
+  }
+}
