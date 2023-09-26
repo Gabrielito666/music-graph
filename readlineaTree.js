@@ -55,7 +55,7 @@ const mainQuestion = new question( {
     question : 'What do you want to do?:'
 } );
 const saveGraphQuestion = new question( { 
-    question :  'Do you want save this?(yes/no)',
+    question :  'Do you want save this?',
     alternativeDisplay : 'boolean'
 } );
 const createGraphNameQuestion = new question( {
@@ -73,7 +73,7 @@ const selectedGraphQuestion = new question( {
     question : 'What do you want to do with this graph?'
 } );
 const findRandomPathDestionQuestion = new question( {
-    question : 'Do you want a random shortes path?(yes/no)',
+    question : 'Do you want a random shortes path?',
     alternativeDisplay : 'boolean' 
 } );
 const putOneNoteQuestion = new question( {
