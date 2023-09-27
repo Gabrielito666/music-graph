@@ -1,35 +1,24 @@
-const dijkstra = require('dijkstrajs');
+const thisSession = require( './readlineaTree' );
+
 const readline = require('readline');
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
+module.exports = rl;
 
-const notes = ['do', 'doS', 're', 'reS', 'mi', 'fa', 'faS', 'sol', 'solS', 'la', 'laS', 'si' ];
-
-const pesoMinimo = 0;
-const pesoMaximo = 10;
-
-function findShortesPath(graph, n1, n2){
-
-    dijkstra.find_path(graph, n1, n2)
-}
-
-
-rl.close();
-
-function makeQuestion(question){
+function makeQuestion( question ){
 
     rl.question(
         formatQuestion( question.question, question.options, question.alternativeDisplay ),
-        (response) => {
+        async (response) => {
             let thisOption
             if( question.alternativeDisplay === 'boolean' ){
                 if( response === 'Y' || response === 'y' ){
-
+                    thisOption = question.options[ 0 ]                  //if yes the fistr option
                 }else if( response === 'N' || response === 'n' ){
-
+                    thisOption = question.options[ 1 ]                  //if no, the second
                 }else{
                     invalidResponse();
                 }
@@ -44,27 +33,31 @@ function makeQuestion(question){
                     invalidResponse();
                 }else{
                     let indexOption = convertLettersNumbers( response, true );
-                    thisOption = question.options[indexOption];
+                    thisOption = question.options[ indexOption ];
                 }
             }
             else if( question.alternativeDisplay === 'numbers' ){
-                let num = parseInt(response);
+                let num = parseInt( response );
                 if(
                     typeof num !== 'number' ||
                     num < 0 ||
-                    !Number.isInteger(num) ||
+                    !Number.isInteger( num ) ||
                     question.options.length < num
                 ){
                     invalidResponse();
                 }else{
-                    thisOption = question.options[num];
+                    thisOption = question.options[ num ];
                 }
             }
             else if( question.alternativeDisplay === 'answer' ){
-
+                thisOption = question.options[ 0 ];
             }
-            thisOption.action(response); //we pass the response for the answer type
-            makeQuestion(thisSession.questionList[thisOption.next]);
+            thisOption.action( response ); //we pass the response for the answer type
+            if( thisOption.close ) {
+                rl.close()
+            }else{
+                makeQuestion( (await thisSession).questionList[ thisOption.next ] )
+            } 
         }
     )
 }
@@ -72,31 +65,29 @@ function makeQuestion(question){
 function formatQuestion(question, options, alternativeDisplay){
 
     let stringOptions;
-    if( alternativeDisplay === 'alphavet' || 'numbers' ){
+    if( alternativeDisplay === 'alphavet' || alternativeDisplay === 'numbers' ){
         const convert = alternativeDisplay === 'alphavet' ? true : false;
         stringOptions = options.map( 
-            (op, index) => `${convertLettersNumbers( index, false, convert=true ) } ) ${op.alternative}`
+            (op, index) => `${ convertLettersNumbers( index, false, convert ) } ) ${ op.alternative }`
         ).join('\n\t')
     }else{
         stringOptions = '';
     }
 
-    return `
-    ${question}${alternativeDisplay === 'boolean' ? '(yes/no)' : '' }
-    
-    ${stringOptions}
-    `
+    return `${ question }${ alternativeDisplay === 'boolean' ? '(yes/no)' : '' }\n\t${ stringOptions }\n\n`
 }
-function convertLettersNumbers(input, toIndex, convert) {
-    if(convert){
+function convertLettersNumbers( input, toIndex, convert=true ) {
+    if( convert ){
         const baseCharCode = 'a'.charCodeAt(0);
-        if (toIndex) {
+        if ( toIndex ) {
           return input.charCodeAt(0) - baseCharCode;
         } else {
-          return String.fromCharCode(baseCharCode + input);
+          return String.fromCharCode( baseCharCode + input );
         }
     }else{
-        return input
+        return input + 1;
     }
 }
-function invalidResponse(){ console.log( 'This response is invalid, try again' ) }
+function invalidResponse(){ console.log( 'This response is invalid, try again' ) };
+
+( async ()=>{ makeQuestion( (await thisSession).questionList[ 0 ] ); } )();
