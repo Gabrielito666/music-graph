@@ -27,7 +27,8 @@ class session{
         return this._questionList;
     }
     async selectGraphList(){
-        this._graphList = await sqliteExpress.select(db, 'graphs', '*');
+        let graphs = await sqliteExpress.select(db, 'graphs', '*');
+        this._graphList = graphs === undefined ? [] : graphs;
     }
     pushGraph(graph){
         this._graphList.push(graph);
@@ -170,7 +171,12 @@ async function inicialize() {
                         random : false
                     } );
                 }
-            } ),                
+            } ),
+            logTheGraphSelected : new option( {
+                next : 6,
+                alternative : 'Log this grapf',
+                action : () => { console.log( thisSession.graphSelected ) }
+            } ),              
             returnMain : new option( {
                 next : 0,                                       //go to main
                 alternative : 'return to main menu'
@@ -209,6 +215,7 @@ async function inicialize() {
     
         questions.selectedGraphMain.pushOption( [
             options.findShortestPaht,
+            options.logTheGraphSelected,
             options.returnMain,
             options.close
         ] );

@@ -46,7 +46,7 @@ function makeQuestion( question ){
                 ){
                     invalidResponse();
                 }else{
-                    thisOption = question.options[ num ];
+                    thisOption = question.options[ num - 1 ];       //for the estetic "+ 1"
                 }
             }
             else if( question.alternativeDisplay === 'answer' ){
@@ -85,7 +85,7 @@ function convertLettersNumbers( input, toIndex, convert=true ) {
           return String.fromCharCode( baseCharCode + input );
         }
     }else{
-        return input + 1;
+        return input + 1;           // just estetic
     }
 }
 function invalidResponse(){ console.log( 'This response is invalid, try again' ) };
