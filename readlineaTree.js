@@ -28,7 +28,8 @@ class session{
     }
     async selectGraphList(){
         let graphs = await sqliteExpress.select(db, 'graphs', '*');
-        this._graphList = graphs === undefined ? [] : graphs;
+        this._graphList = graphs === undefined ? [] : graphs ;
+        this._graphList = Array.isArray( this._graphList ) ? this._graphList : [ this._graphList ];
     }
     pushGraph(graph){
         this._graphList.push(graph);
