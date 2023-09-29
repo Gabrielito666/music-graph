@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const thisSession = require( './readlineaTree' );
 
 const readline = require('readline');

@@ -1,4 +1,3 @@
-```markdown
 # Music Graph 🎵📈
 
 **Music Graph** is a small package that lets you create musical strokes based on graph theory and Dijkstra's algorithm!
@@ -7,13 +6,13 @@
 
 To install **Music Graph**, simply run the following command in your terminal:
 
-\```sh
-npm i music-graph
-\```
+``sh
+npx i music-graph
+``
 
 ## Usage 🚀
 
-Once installed, execute the `musicGraph` command in your terminal to open the interface.
+Once installed, execute the `npm start` command in your terminal to open the interface.
 
 For yes/no prompts, please enter `y` for yes and `n` for no.
 
@@ -25,9 +24,9 @@ For yes/no prompts, please enter `y` for yes and `n` for no.
 
 The available notes are:
 
-\```
+``
 do doS re reS mi fa faS sol solS la laS si
-\```
+``
 
 The path will be automatically copied to your clipboard once a route is found!
 
