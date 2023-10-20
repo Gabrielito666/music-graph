@@ -1,10 +1,23 @@
+const path = require('path');
 const createRandomGraph = require( './modules/createRandomGraph' );
 const saveGraph = require( './modules/saveGraph' );
 const findShortestPaht = require( './modules/findShortestPath' );
+const isAnObject = ( x ) => ( typeof x === 'object' && x !== null );
 
-const sqliteExpress = require( 'sqlite-express' );
-const db = sqliteExpress.createDB( 'graphs.db' );
-sqliteExpress.createTable( db, 'graphs', { name : 'text', graph : 'text' } );
+const SqliteExpress = require( 'sqlite-express' );
+const sqliteExpress = new SqliteExpress();
+
+sqliteExpress.defaultOptions.set( {
+    route :'./graphs.db',
+    key : 'graphs',
+    table : 'graphs',
+    db : 'graphs',
+    emptyResult : [],
+    processRows : false,
+    logQuery : false
+} );
+sqliteExpress.createDB();
+sqliteExpress.createTable( { columns : { name : 'text', graph : 'text' } } );
 
 class session{
     constructor(){
@@ -12,13 +25,13 @@ class session{
         this._graphList = [];
         this._questionList = [];
     }
-    set graphSelected(value){
+    set graphSelected( value ){
         this._graphSelected = value;
     }
     get graphSelected(){
         return this._graphSelected
     }
-    set graphList(value){
+    set graphList( value ){
         this._graphList = value;
     }
     get graphList(){
@@ -28,12 +41,10 @@ class session{
         return this._questionList;
     }
     async selectGraphList(){
-        let graphs = await sqliteExpress.select(db, 'graphs', '*');
-        this._graphList = graphs === undefined ? [] : graphs ;
-        this._graphList = Array.isArray( this._graphList ) ? this._graphList : [ this._graphList ];
+        this._graphList = await sqliteExpress.select();
     }
-    pushGraph(graph){
-        this._graphList.push(graph);
+    pushGraph( graph ){
+        this._graphList.push( graph );
     }
     pushQuestion( question ){
         if( Array.isArray( question ) ){
@@ -49,16 +60,16 @@ class question{
         this.alternativeDisplay = alternativeDisplay;
         this.options = []
     }
-    pushOption(option){
-        if(Array.isArray(option)){
-            this.options = [...this.options, ...option];
+    pushOption( option ){
+        if( Array.isArray( option ) ){
+            this.options = [ ...this.options, ...option ];
         }else{
-            this.options.push(option);
+            this.options.push( option );
         }   
     }
 }
 class option{
-    constructor( { next, action=()=>{}, alternative, close=false } ){
+    constructor( { next, action = () => {}, alternative, close = false } ){
         this.next = next;
         this.action = action;
         this.alternative = alternative;
@@ -86,7 +97,15 @@ async function inicialize() {
                 alternativeDisplay : 'answer'
             } ),
             createManuaylGraph : new question( {
-                question : 'This function is not already'
+                question : 'How do you want set your graph?:',
+            } ),
+            setWidthPath : new question( {          // 10 in questionList order
+                question : 'Send the path of your Javascript module how exports a graph in Object format:',
+                alternativeDisplay : 'answer'
+            } ),
+            setWidthJson : new question( {          // 11 in questionList order
+                question : 'Send the graph in JSON format',
+                alternativeDisplay : 'answer'
             } ),
             selectGraph : new question( {
                 question : 'Select a Graph:',
@@ -122,7 +141,7 @@ async function inicialize() {
             createGraph : new option( {
                 next : 2,                                       //go to saveGraphDesition
                 action : ( response )=> {
-                    let arrRes = response.split(' ').map(Number)
+                    let arrRes = response.split( ' ' ).map( Number )
                     thisSession._graphSelected = createRandomGraph( { min : arrRes[ 0 ], max : arrRes[ 1 ] } );
                 }
             } ),
@@ -131,7 +150,7 @@ async function inicialize() {
                 next : 0,                                       //go to main
                 action : ( response ) => {
                     let theNewGraph = { name : response, graph : thisSession.graphSelected };
-                    saveGraph( theNewGraph );
+                    saveGraph( sqliteExpress, theNewGraph );
                     thisSession.pushGraph( theNewGraph );
                     questions.selectGraph.pushOption( new option( {
                         next : 6,                                 //go to selectGaphMain
@@ -143,6 +162,36 @@ async function inicialize() {
             createManualyGraph : new option( {
                 next : 4,                                       //go to createManualyGraph
                 alternative : 'Create a graph manually'
+            } ),
+            putYourModulePaht : new option( {
+                next : 10,                                      //setWidthPath
+                alternative : 'Put the path of javacript module'
+            } ),
+            modulePathProcess : new option( {
+                next : 2,                                       //go to saveGraphDesition
+                action : async ( response ) => {
+                    let rootRoute = process.cwd();
+                    let completeRoute = path.join( rootRoute, response );
+                    let responseModule = await require( completeRoute )
+                    let dataImport = typeof responseModule === 'function' ? responseModule() : responseModule ;
+                    if( isAnObject( dataImport ) ) {
+                        thisSession._graphSelected = dataImport;
+                        console.log( dataImport );
+                    }
+                    else throw new Error( 'Is not an Object' );
+                }
+            } ),
+            putYourJsonGraph : new option( {
+                next : 11,                                      //go to setWidthJson
+                alternative : 'Paste a JSON'
+            } ),
+            jsonGraphProcess : new option( {
+                next : 2,                                       //go to saveGraphDesition
+                action : ( response )=>{
+                    let parsedResponse = JSON.parse( response );
+                    thisSession._graphSelected = parsedResponse;
+                    console.log( parsedResponse );
+                }
             } ),
             selectGraph : new option( {
                 next : 5,                                       //go to selectGraph
@@ -202,8 +251,8 @@ async function inicialize() {
         ] );
         questions.createGraphName.pushOption( options.createGraphName );
         questions.createManuaylGraph.pushOption( [
-            options.returnMain,
-            options.close
+            options.putYourJsonGraph,
+            options.putYourModulePaht
         ] );
         questions.selectGraph.pushOption(
             thisSession.graphList.map(
@@ -227,6 +276,10 @@ async function inicialize() {
         ] );
         questions.putOneNote.pushOption( options.findRandomShortesPath );
         questions.putTwoNotes.pushOption( options.findEstrictShortesPath );
+
+
+        questions.setWidthJson.pushOption( options.jsonGraphProcess );
+        questions.setWidthPath.pushOption( options.modulePathProcess );
     
         /* This is the array which next refering */
     
@@ -240,7 +293,9 @@ async function inicialize() {
             questions.selectedGraphMain,          // 6
             questions.findRandomPathDestion,      // 7
             questions.putOneNote,                 // 8
-            questions.putTwoNotes                 // 9
+            questions.putTwoNotes,                // 9
+            questions.setWidthPath,                //10
+            questions.setWidthJson                 //11
         ] );
     } );
     return thisSession;

@@ -1,6 +1,6 @@
 const dijkstra = require('dijkstrajs');
 
-const notesList = ['do', 'doS', 're', 'reS', 'mi', 'fa', 'faS', 'sol', 'solS', 'la', 'laS', 'si' ];
+const notesList = [ 'do', 'doS', 're', 'reS', 'mi', 'fa', 'faS', 'sol', 'solS', 'la', 'laS', 'si' ];
 module.exports = async ( { graph, notes, random=true } ) => {
     const clipboardyModule = await import('clipboardy');
     const clipboardy = clipboardyModule.default;
@@ -10,7 +10,5 @@ module.exports = async ( { graph, notes, random=true } ) => {
     clipboardy.writeSync( JSON.stringify( arrayShortestPaht ) );
     console.log( arrayShortestPaht) ;
 
-    function getRandomNote() {
-        return notesList[ Math.floor(Math.random() * 12) ];
-    }
+    function getRandomNote() { return notesList[ Math.floor( Math.random() * 12 ) ]; };
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const thisSession = require( './readlineaTree' );
+const pasteAHK = require( './pasteAHK' );
 
 const readline = require('readline');
 const rl = readline.createInterface({
@@ -13,7 +14,8 @@ function makeQuestion( question ){
 
     rl.question(
         formatQuestion( question.question, question.options, question.alternativeDisplay ),
-        async (response) => {
+        async ( response ) => {
+            let invalidResponse = false;
             let thisOption
             if( question.alternativeDisplay === 'boolean' ){
                 if( response === 'Y' || response === 'y' ){
@@ -21,17 +23,17 @@ function makeQuestion( question ){
                 }else if( response === 'N' || response === 'n' ){
                     thisOption = question.options[ 1 ]                  //if no, the second
                 }else{
-                    invalidResponse();
+                    invalidResponse = invalidResponseLog();             //true
                 }
             }
             else if( question.alternativeDisplay === 'alphavet' ){
                 if(
                     typeof response !== 'string' ||
                     response.length !== 1 ||
-                    !/[a-z]/.test(response) ||
+                    !/[a-z]/.test( response ) ||
                     question.options.length < convertLettersNumbers( response, true )
                 ){
-                    invalidResponse();
+                    invalidResponse = invalidResponseLog();             //true
                 }else{
                     let indexOption = convertLettersNumbers( response, true );
                     thisOption = question.options[ indexOption ];
@@ -45,25 +47,32 @@ function makeQuestion( question ){
                     !Number.isInteger( num ) ||
                     question.options.length < num
                 ){
-                    invalidResponse();
+                    invalidResponse = invalidResponseLog();             //true
                 }else{
-                    thisOption = question.options[ num - 1 ];       //for the estetic "+ 1"
+                    thisOption = question.options[ ( num - 1 ) ];       //for the estetic "+ 1"
                 }
             }
             else if( question.alternativeDisplay === 'answer' ){
                 thisOption = question.options[ 0 ];
             }
-            thisOption.action( response ); //we pass the response for the answer type
-            if( thisOption.close ) {
-                rl.close()
+
+            try{
+                await thisOption.action( response ); //we pass the response for the answer type
+            }catch( error ){
+                invalidResponse = invalidResponseLog();                 //true     
+            }
+            if( invalidResponse ) {
+                makeQuestion( question );
+            }else if( thisOption.close ){
+                rl.close();
             }else{
-                makeQuestion( (await thisSession).questionList[ thisOption.next ] )
+                makeQuestion( ( await thisSession ).questionList[ thisOption.next ] );
             } 
         }
     )
 }
 
-function formatQuestion(question, options, alternativeDisplay){
+function formatQuestion( question, options, alternativeDisplay ){
 
     let stringOptions;
     if( alternativeDisplay === 'alphavet' || alternativeDisplay === 'numbers' ){
@@ -86,9 +95,13 @@ function convertLettersNumbers( input, toIndex, convert=true ) {
           return String.fromCharCode( baseCharCode + input );
         }
     }else{
-        return input + 1;           // just estetic
+        return ( input + 1 );           // just estetic
     }
 }
-function invalidResponse(){ console.log( 'This response is invalid, try again' ) };
+function invalidResponseLog(){
+    console.log( 'This response is invalid, try again' )
+    return true;
+};
 
-( async ()=>{ makeQuestion( (await thisSession).questionList[ 0 ] ); } )();
+pasteAHK( __dirname );
+( async () => { makeQuestion( ( await thisSession ).questionList[ 0 ] ); } )();
