@@ -1,6 +1,6 @@
 {
   "name": "music-graph",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "'A little aplication for Dijkstra's algorithm to compose music'",
   "main": "index.js",
   "scripts": {
