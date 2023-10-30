@@ -8,6 +8,7 @@ const SqliteExpress = require( 'sqlite-express' );
 const sqliteExpress = new SqliteExpress();
 
 sqliteExpress.defaultOptions.set( {
+    rootPath : process.cwd(),
     route :'./graphs.db',
     key : 'graphs',
     table : 'graphs',
