@@ -5,7 +5,7 @@ const findShortestPaht = require( './modules/findShortestPath' );
 const isAnObject = ( x ) => ( typeof x === 'object' && x !== null );
 
 const SqliteExpress = require( 'sqlite-express' );
-const sqliteExpress = new SqliteExpress();
+const sqliteExpress = new SqliteExpress(process.cwd());
 
 sqliteExpress.defaultOptions.set( {
     rootPath : process.cwd(),
