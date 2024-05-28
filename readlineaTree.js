@@ -3,6 +3,7 @@ const createRandomGraph = require( './modules/createRandomGraph' );
 const saveGraph = require( './modules/saveGraph' );
 const findShortestPaht = require( './modules/findShortestPath' );
 const isAnObject = ( x ) => ( typeof x === 'object' && x !== null );
+const getAllPaths = require('./modules/getAllPaths');
 
 const SqliteExpress = require( 'sqlite-express' );
 const sqliteExpress = new SqliteExpress(process.cwd());
@@ -237,6 +238,11 @@ async function inicialize() {
                 next : 0,                  
                 alternative : 'Exit',
                 close : true                                    //end
+            } ),
+            getAllPaths : new option( {
+                next : 6,
+                alternative : 'Get all posible paths',
+                action : async () => { console.log( await getAllPaths(thisSession.graphSelected) ) }
             } )
         };
         questions.main.pushOption( [
@@ -268,6 +274,7 @@ async function inicialize() {
         questions.selectedGraphMain.pushOption( [
             options.findShortestPaht,
             options.logTheGraphSelected,
+            options.getAllPaths,
             options.returnMain,
             options.close
         ] );
